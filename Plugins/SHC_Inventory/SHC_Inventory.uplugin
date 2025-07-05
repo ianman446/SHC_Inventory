@@ -1,0 +1,32 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "SHC_Inventory",
+	"Description": "This plugin will provide a fully modular inventory system built for Unreal Engine, supporting both singleplayer and multiplayer projects. It will include robust item interaction systems, spatial inventory grids with category filtering, and built-in support for stackable, consumable, and equippable items. Designed with scalability in mind, it will allow developers to create intuitive inventory UIs, replicate item data across the network, and integrate seamlessly with Blueprint or C++ workflows.",
+	"Category": "Other",
+	"CreatedBy": "Ian Goldsmith",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "SHC_Inventory",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [],
+	"Dependencies": [
+		{
+			"Name": "EnhancedInput",
+			"Type": "Runtime"
+		}
+	]
+
+}
