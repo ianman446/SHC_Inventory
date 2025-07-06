@@ -9,6 +9,7 @@
 #include "Engine/World.h" 
 #include "Items/Components/Inv_ItemComponent.h"
 #include "Interaction/Inv_HighlightableInterface.h"
+#include "InventoryManagement/Components/Inv_InventoryComponent.h"
 #include "Widgets/HUD/Inv_HUDWidget.h"
 
 
@@ -35,7 +36,10 @@ void AInv_PlayerController::BeginPlay()
         Subsystem->AddMappingContext(DefaultIMC, 0);
     }
 
+    InventoryComponent = FindComponentByClass< UInv_InventoryComponent>();
+
     CreateHUDWidget();
+
 }
 
 void AInv_PlayerController::SetupInputComponent()
@@ -45,11 +49,19 @@ void AInv_PlayerController::SetupInputComponent()
     UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
 
     EnhancedInputComponent->BindAction(PrimaryInteractAction, ETriggerEvent::Started, this, &AInv_PlayerController::PrimaryInteract);
+    EnhancedInputComponent->BindAction(ToggleInventoryAction, ETriggerEvent::Started, this, &AInv_PlayerController::ToggleInventory);
 }
 
 void AInv_PlayerController::PrimaryInteract()
 {
     UE_LOG(LogTemp, Warning, TEXT("Interaction action"));
+}
+
+void AInv_PlayerController::ToggleInventory()
+{
+    if (!InventoryComponent.IsValid()) return;
+
+    InventoryComponent->ToggleInventory();
 }
 
 void AInv_PlayerController::CreateHUDWidget()

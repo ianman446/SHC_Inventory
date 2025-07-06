@@ -9,6 +9,7 @@
 class UInputMappingContext;
 class UInputAction;
 class UInv_HUDWidget;
+class UInv_InventoryComponent;
 
 UCLASS()
 class SHC_INVENTORY_API AInv_PlayerController : public APlayerController
@@ -17,8 +18,14 @@ class SHC_INVENTORY_API AInv_PlayerController : public APlayerController
 
 public:
     AInv_PlayerController();
-
     virtual void Tick(float DeltaTime) override;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    void ToggleInventory();
+
 protected:
 	virtual void BeginPlay() override;
     virtual void SetupInputComponent() override;
@@ -28,7 +35,6 @@ private:
     /// This is the function called to start an interaction like picking up an item
     /// </summary>
     void PrimaryInteract();
-
     void CreateHUDWidget();
 
     /// <summary>
@@ -36,6 +42,8 @@ private:
     /// </summary>
     void TraceForItem();
     
+    TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
+
     /// <summary>
     /// Default Inventory Input Mapping Context for interaction and Hot Slots
     /// </summary>
@@ -47,6 +55,12 @@ private:
     /// </summary>
     UPROPERTY(EditDefaultsOnly, Category = "Inventory")
     TObjectPtr<UInputAction> PrimaryInteractAction;
+
+    /// <summary>
+    /// The specific Input Action for Opening or Closing the inventory widget
+    /// </summary>
+    UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+    TObjectPtr<UInputAction> ToggleInventoryAction;
 
     UPROPERTY(EditDefaultsOnly, Category = "Inventory")
     TSubclassOf<UInv_HUDWidget> HUDWidgetClass;
