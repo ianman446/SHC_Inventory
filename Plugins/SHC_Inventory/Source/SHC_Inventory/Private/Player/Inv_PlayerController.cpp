@@ -103,8 +103,8 @@ void AInv_PlayerController::TraceForItem()
 
     if (LastActor.IsValid())
     {
-        UActorComponent* Highlightable = ThisActor->FindComponentByInterface(UInv_HighlightableInterface::StaticClass());
-        if (IsValid(Highlightable))
+        
+        if (UActorComponent* Highlightable = LastActor->FindComponentByInterface(UInv_HighlightableInterface::StaticClass()); IsValid(Highlightable))
         {
             IInv_HighlightableInterface::Execute_UnHighlight(Highlightable);
         }
