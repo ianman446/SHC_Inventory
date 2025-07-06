@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h" 
 #include "Items/Components/Inv_ItemComponent.h"
+#include "Interaction/Inv_HighlightableInterface.h"
 #include "Widgets/HUD/Inv_HUDWidget.h"
 
 
@@ -77,19 +78,23 @@ void AInv_PlayerController::TraceForItem()
     FHitResult HitResult;
     GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ItemTraceChannel);
 
-    LastActor = ThisActor;
-    ThisActor = HitResult.GetActor();
-
     if (!ThisActor.IsValid())
     {
         if (IsValid(HUDWidget)) HUDWidget->HidePickupMessage();
     }
 
+    LastActor = ThisActor;
+    ThisActor = HitResult.GetActor();
+
     if (ThisActor == LastActor) return;
 
     if (ThisActor.IsValid())
     {
-        UE_LOG(LogTemp, Warning, TEXT(" Started Tracing new actor"));
+        if (UActorComponent* Highlightable = ThisActor->FindComponentByInterface(UInv_HighlightableInterface::StaticClass()); IsValid(Highlightable))
+        {
+            IInv_HighlightableInterface::Execute_Highlight(Highlightable);
+        }
+
         UInv_ItemComponent* ItemComponent = ThisActor->FindComponentByClass< UInv_ItemComponent>();
         if (!IsValid(ItemComponent)) return;
 
@@ -98,7 +103,11 @@ void AInv_PlayerController::TraceForItem()
 
     if (LastActor.IsValid())
     {
-        UE_LOG(LogTemp, Warning, TEXT(" Stopped tracing last actor"));
+        UActorComponent* Highlightable = ThisActor->FindComponentByInterface(UInv_HighlightableInterface::StaticClass());
+        if (IsValid(Highlightable))
+        {
+            IInv_HighlightableInterface::Execute_UnHighlight(Highlightable);
+        }
     }
 
 }
