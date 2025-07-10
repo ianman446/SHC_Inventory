@@ -11,7 +11,15 @@ UInv_InventoryComponent::UInv_InventoryComponent()
 
 void UInv_InventoryComponent::TryAddItem(UInv_ItemComponent* ItemComponent)
 {
-	NoRoomInInventory.Broadcast();
+	FInv_SlotAvailabilityResult Result = InventoryMenu->HasRoomForItem(ItemComponent);
+
+	if (Result.TotalRoomToFill == 0)
+	{
+		NoRoomInInventory.Broadcast();
+		return;
+	}	
+
+	// TODO: Add the item to the inventory
 }
 
 void UInv_InventoryComponent::ToggleInventory()
@@ -25,7 +33,6 @@ void UInv_InventoryComponent::ToggleInventory()
 		OpenInventoryMenu();
 	}	
 }
-
 
 void UInv_InventoryComponent::OpenInventoryMenu()
 {
@@ -56,7 +63,6 @@ void UInv_InventoryComponent::CloseInventoryMenu()
 	OwningController->SetShowMouseCursor(false);
 }
 
-// Called when the game starts
 void UInv_InventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
