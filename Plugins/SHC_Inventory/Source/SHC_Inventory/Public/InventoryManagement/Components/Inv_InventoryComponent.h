@@ -25,14 +25,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Inventory")
 	void TryAddItem(UInv_ItemComponent* ItemComponent);
 
-	UFUNCTION(Server, Reliable)
-	void Server_AddNewItem(UInv_ItemComponent* ItemComponent, int32 StackCount);
+	//UFUNCTION(Server, Reliable)
+	//void Server_AddNewItem(UInv_ItemComponent* ItemComponent, int32 StackCount);
 
-	UFUNCTION(Server, Reliable)
-	void Server_AddStacksToItem(UInv_ItemComponent* ItemComponent, int32 StackCount, int32 Remainder);
+	//UFUNCTION(Server, Reliable)
+	//void Server_AddStacksToItem(UInv_ItemComponent* ItemComponent, int32 StackCount, int32 Remainder);
 
-	//UFUNCTION(BlueprintCallable, Category = "Inventory")
+	
 	void ToggleInventory();
+
 
 	FInventoryItemChange OnItemAdded;
 	FInventoryItemChange OnItemRemoved;
