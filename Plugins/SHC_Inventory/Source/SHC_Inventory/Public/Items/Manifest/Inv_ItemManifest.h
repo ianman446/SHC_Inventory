@@ -19,20 +19,20 @@ struct FInv_ItemFragment;
 USTRUCT(BlueprintType)
 struct SHC_INVENTORY_API FInv_ItemManifest
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    UInv_InventoryItem* Manifest(UObject* NewOuter);
-    EInv_ItemCategory GetItemCategory() const { return ItemCategory; }
-    FGameplayTag GetItemType() { return ItemType; }
+	UInv_InventoryItem* Manifest(UObject* NewOuter);
+	EInv_ItemCategory GetItemCategory() const { return ItemCategory; }
+	FGameplayTag GetItemType() { return ItemType; }
 
 private:
 
-    UPROPERTY(EditAnywhere, meta = (ExcludeBaseStruct), Category = "Inventory")
-    TArray<TInstancedStruct<FInv_ItemFragment>> Fragments;
+	UPROPERTY(EditAnywhere, meta = (ExcludeBaseStruct), Category = "Inventory")
+	TArray<TInstancedStruct<FInv_ItemFragment>> Fragments;
 
-    UPROPERTY(EditAnywhere, Category = "Inventory")
-    EInv_ItemCategory ItemCategory = EInv_ItemCategory::None;
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	EInv_ItemCategory ItemCategory = EInv_ItemCategory::None;
 
-    UPROPERTY(EditAnywhere, Category = "Inventory")
-    FGameplayTag ItemType;
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FGameplayTag ItemType;
 };
