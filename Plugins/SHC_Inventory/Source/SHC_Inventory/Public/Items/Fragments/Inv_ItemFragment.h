@@ -22,7 +22,7 @@ struct FInv_ItemFragment
     FInv_ItemFragment& operator=(FInv_ItemFragment&&) = default;        // move operation
     virtual ~FInv_ItemFragment() {}                                     // Destructor
 
-    FGameplayTag GetFragmentTag() { return FragmentTag; }
+    FGameplayTag GetFragmentTag() const { return FragmentTag; }
     void SetFragmentTag(FGameplayTag Tag) { FragmentTag = Tag; }
 
 private:

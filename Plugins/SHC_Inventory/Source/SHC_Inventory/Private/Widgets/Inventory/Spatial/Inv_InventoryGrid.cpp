@@ -7,6 +7,8 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Widgets/Utils/Inv_WidgetUtils.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Items/Fragments/Inv_FragmentTags.h"
+#include "Items/Fragments/Inv_ItemFragment.h"
 #include "InventoryManagement/Components/Inv_InventoryComponent.h"
 #include "InventoryManagement/Utils/Inv_InventoryStatics.h"
 #include "Items/Inv_InventoryItem.h"
@@ -60,8 +62,10 @@ void UInv_InventoryGrid::AddItem(UInv_InventoryItem* Item)
 
 void UInv_InventoryGrid::AddItemToInices(const FInv_SlotAvailabilityResult& Result, UInv_InventoryItem* NewItem)
 {
-	// TODO: Get grid fragment so we know how may grid spaces the item takes up.
-	//		Get Image fragment to display
+	const FInv_GridFragment* GridFragment = GetFragment<FInv_GridFragment>(NewItem, FragmentTags::GridFragment);
+	const FInv_ImageFragment* ImageFragment = GetFragment<FInv_ImageFragment>(NewItem, FragmentTags::IconFragment);
+	if (!GridFragment || !ImageFragment) return;
+
 	//		Create a widget
 	//		Store the widget in a container
 }
