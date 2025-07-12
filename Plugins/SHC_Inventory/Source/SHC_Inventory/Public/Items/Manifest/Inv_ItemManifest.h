@@ -14,6 +14,7 @@
  */
 
 class UInv_InventoryItem;
+struct FInv_ItemFragment;
 
 USTRUCT(BlueprintType)
 struct SHC_INVENTORY_API FInv_ItemManifest
@@ -25,6 +26,9 @@ struct SHC_INVENTORY_API FInv_ItemManifest
     FGameplayTag GetItemType() { return ItemType; }
 
 private:
+
+    UPROPERTY(EditAnywhere, meta = (ExcludeBaseStruct), Category = "Inventory")
+    TArray<TInstancedStruct<FInv_ItemFragment>> Fragments;
 
     UPROPERTY(EditAnywhere, Category = "Inventory")
     EInv_ItemCategory ItemCategory = EInv_ItemCategory::None;
