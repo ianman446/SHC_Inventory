@@ -50,6 +50,7 @@ private:
 	void AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount);
 	UInv_SlottedItem* CreateSlottedItem(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount, const FInv_GridFragment* GridFragment, const FInv_ImageFragment* ImageFragment);
 	void AddSlottedItemToCanvas(UInv_SlottedItem* SlottedItem, const int32 Index, const FInv_GridFragment* GridFragment);
+	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")
 	EInv_ItemCategory ItemCategory;

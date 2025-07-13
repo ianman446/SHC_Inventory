@@ -58,7 +58,6 @@ void UInv_InventoryGrid::AddItem(UInv_InventoryItem* Item)
 	if (!MatchesCategory(Item)) return;
 
 	FInv_SlotAvailabilityResult Result = HasRoomForItem(Item);
-
 	AddItemToInices(Result, Item);
 }
 
@@ -67,6 +66,7 @@ void UInv_InventoryGrid::AddItemToInices(const FInv_SlotAvailabilityResult& Resu
 	for (const auto& Availability : Result.SlotAvailabilities)
 	{
 		AddItemAtIndex(NewItem, Availability.Index, Result.bStackable, Availability.AmountToFill);
+		UpdateGridSlots(NewItem, Availability.Index);
 	}
 
 
@@ -104,6 +104,14 @@ void UInv_InventoryGrid::AddSlottedItemToCanvas(UInv_SlottedItem* SlottedItem, c
 	const FVector2D DrawPos = UInv_WidgetUtils::GetPositionFromIndex(Index, Columns) * TileSize;
 	const FVector2D DrawPosWithPadding = DrawPos + FVector2D(GridFragment->GetGridPadding());
 	CanvasSlot->SetPosition(DrawPosWithPadding);
+}
+
+void UInv_InventoryGrid::UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index)
+{
+	check(GridSlots.IsValidIndex(Index));
+
+	UInv_GridSlot* GridSlot = GridSlots[Index];
+	GridSlot->SetOccupiedTexture();
 }
 
 FVector2D UInv_InventoryGrid::GetDrawSize(const FInv_GridFragment* GridFragment) const
