@@ -74,12 +74,15 @@ void UInv_InventoryGrid::AddItemToInices(const FInv_SlotAvailabilityResult& Resu
 
 void UInv_InventoryGrid::AddItemAtIndex(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount)
 {
+	UE_LOG(LogTemp, Warning, TEXT("UInv_InventoryGrid::AddItemAtIndex::We Get here!"))
 	const FInv_GridFragment* GridFragment = GetFragment<FInv_GridFragment>(Item, FragmentTags::GridFragment);
 	const FInv_ImageFragment* ImageFragment = GetFragment<FInv_ImageFragment>(Item, FragmentTags::IconFragment);
 	if (!GridFragment || !ImageFragment) return;
 
 	UInv_SlottedItem* SlottedItem = CreateSlottedItem(Item, Index, bStackable, StackAmount, GridFragment, ImageFragment);
+	AddSlottedItemToCanvas(SlottedItem, Index, GridFragment);
 
+	SlottedItems.Add(Index, SlottedItem);
 	//		Store the widget in a container
 }
 
@@ -91,6 +94,16 @@ UInv_SlottedItem* UInv_InventoryGrid::CreateSlottedItem(UInv_InventoryItem* Item
 	SlottedItem->SetGridIndex(Index);
 
 	return SlottedItem;
+}
+
+void UInv_InventoryGrid::AddSlottedItemToCanvas(UInv_SlottedItem* SlottedItem, const int32 Index, const FInv_GridFragment* GridFragment)
+{
+	CanvasPanel->AddChild(SlottedItem);
+	UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(SlottedItem);
+	CanvasSlot->SetSize(GetDrawSize(GridFragment));
+	const FVector2D DrawPos = UInv_WidgetUtils::GetPositionFromIndex(Index, Columns) * TileSize;
+	const FVector2D DrawPosWithPadding = DrawPos + FVector2D(GridFragment->GetGridPadding());
+	CanvasSlot->SetPosition(DrawPosWithPadding);
 }
 
 FVector2D UInv_InventoryGrid::GetDrawSize(const FInv_GridFragment* GridFragment) const
