@@ -36,10 +36,11 @@ struct FInv_GridFragment : public FInv_ItemFragment
 {
     GENERATED_BODY()
 
-    FIntPoint GetGridSize() { return GridSize; }
+public:
+    FIntPoint GetGridSize() const { return GridSize; }
     void SetGridSize(FIntPoint Size) { GridSize = Size; }
 
-    float GetPadding() { return GridPadding; }
+    float GetGridPadding() const { return GridPadding; }
     void SetGridPadding(float Padding) { GridPadding = Padding; }
 
 private:
