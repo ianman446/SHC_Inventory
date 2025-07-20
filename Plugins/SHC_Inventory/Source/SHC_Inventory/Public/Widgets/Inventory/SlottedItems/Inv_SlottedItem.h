@@ -12,6 +12,7 @@
 
 class UImage;
 class UInv_InventoryItem;
+class UTextBlock;
 
 UCLASS()
 class SHC_INVENTORY_API UInv_SlottedItem : public UUserWidget
@@ -36,10 +37,15 @@ public:
 
 	void SetImageBrush(const FSlateBrush& Brush) const;
 
+	void UpdateStackCount(int32 StackCount);
+
 private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> Image_Icon;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> Text_StackCount;
 
 	int32 GridIndex = 0;
 	FIntPoint GridDimensions;

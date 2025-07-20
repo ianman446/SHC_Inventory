@@ -77,10 +77,10 @@ struct FInv_StackableFragment : public FInv_ItemFragment
     GENERATED_BODY()
 
     int32 GetMaxStackSize() const { return MaxStackSize; }
-    void SetMaxStackSize(int32 MaxSize) { MaxStackSize = MaxSize; }
+    void SetMaxStackSize(int32 MaxSize);
 
     int32 GetStackCount() const { return StackCount; }
-    void SetStackCount(int32 CurrentCount) { StackCount = CurrentCount; }
+    void SetStackCount(int32 CurrentCount);
 
 private:
 
