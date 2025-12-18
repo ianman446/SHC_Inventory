@@ -5,17 +5,20 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Types/Inv_GridTypes.h"
+#include "GameplayTagContainer.h"
+
 #include "Inv_InventoryGrid.generated.h"
 
+struct FInv_ImageFragment;
+struct FInv_GridFragment;
+class UInv_SlottedItem;
+class UInv_ItemComponent;
+struct FInv_ItemManifest;
 class UCanvasPanel;
 class UInv_GridSlot;
 class UInv_InventoryComponent;
-class UInv_ItemComponent;
-struct FInv_ItemManifest;
-struct FInv_GridFragment;
-struct FInv_ImageFragment;
-class UInv_InventoryItem;
-class UInv_SlottedItem;
+struct FGameplayTag;
+
 /**
  * 
  */
@@ -51,6 +54,26 @@ private:
 	UInv_SlottedItem* CreateSlottedItem(UInv_InventoryItem* Item, const int32 Index, const bool bStackable, const int32 StackAmount, const FInv_GridFragment* GridFragment, const FInv_ImageFragment* ImageFragment);
 	void AddSlottedItemToCanvas(UInv_SlottedItem* SlottedItem, const int32 Index, const FInv_GridFragment* GridFragment);
 	void UpdateGridSlots(UInv_InventoryItem* NewItem, const int32 Index, bool bStackableItem, const int32 StackAmount);
+    bool IsIndexClaimed(const TSet<int32>& CheckedIndices, const int32 Index) const;
+    bool HasRoomAtIndex(const UInv_GridSlot* GridSlot, 
+		const FIntPoint& Dimensions,
+        const TSet<int32>& CheckedIndices,
+        TSet<int32>& OutTentativeClaimedIndices,
+        const FGameplayTag& ItemType,
+		const int32 MaxStackSize);
+	bool CheckSlotConstraints(const UInv_GridSlot* GridSlot, 
+		const UInv_GridSlot* SubGridSlot, 
+		const TSet<int32>& CheckedIndices, 
+		TSet<int32>& OutTentativeClaimedIndices,
+		const FGameplayTag& ItemType,
+		const int32 MaxStackSize) const;
+    FIntPoint GetItemDimensions(const FInv_ItemManifest& Manifest) const;
+	bool HasValidItem(const UInv_GridSlot* GridSlot) const;
+    bool IsUpperLeftGridSlot(const UInv_GridSlot* GridSlot, const UInv_GridSlot* SubGridSlot) const;
+    bool DoesItemTypeMatch(const UInv_InventoryItem* SubItem, const FGameplayTag& ItemType) const;
+    bool IsInGridBounds(const int32 StartIndex, const FIntPoint& ItemDimensions) const;
+    int32 DetermineFillAmount(const bool bStackable, const int32 MaxStackSize, const int32 AmountToFill, const UInv_GridSlot* GridSlot) const;
+	int32 GetStackAmount(const UInv_GridSlot* GridSlot) const;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")
 	EInv_ItemCategory ItemCategory;

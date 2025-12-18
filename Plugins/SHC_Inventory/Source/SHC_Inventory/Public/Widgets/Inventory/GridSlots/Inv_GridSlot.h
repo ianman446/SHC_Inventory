@@ -37,6 +37,9 @@ public:
 	int32 GetStackCount() const { return StackCount; }
 	void SetStackCount(int32 Count) { StackCount = Count; }
 
+	int32 GetIndex() const { return TileIndex; }
+	void SetIndex(int32 Index) { TileIndex = Index; }
+
 	int32 GetUpperLeftIndex() const { return UpperLeftIndex; }
 	void SetUpperLeftIndex(int32 Index) { UpperLeftIndex = Index; }
 

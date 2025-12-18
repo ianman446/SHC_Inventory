@@ -23,7 +23,7 @@ struct SHC_INVENTORY_API FInv_ItemManifest
 
 	UInv_InventoryItem* Manifest(UObject* NewOuter);
 	EInv_ItemCategory GetItemCategory() const { return ItemCategory; }
-	FGameplayTag GetItemType() { return ItemType; }
+	FGameplayTag GetItemType() const { return ItemType; }
 
 	template<typename T> requires std::derived_from<T, FInv_ItemFragment>
 	const T* GetFragmentOfTypeWithTag(const FGameplayTag& FragmentTag) const;

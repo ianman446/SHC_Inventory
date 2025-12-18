@@ -9,6 +9,7 @@
 class UInv_InventoryComponent;
 class UInv_ItemComponent;
 class UInv_InventoryItem;
+struct FGameplayTag;
 
 /** A single entry in an inventory */
 USTRUCT(BlueprintType)
@@ -50,6 +51,8 @@ struct FInv_InventoryFastArray : public FFastArraySerializer
 	UInv_InventoryItem* AddEntry(UInv_ItemComponent* ItemComponent);
 	UInv_InventoryItem* AddEntry(UInv_InventoryItem* Item);
 	void RemoveEntry(UInv_InventoryItem* Item);
+	UInv_InventoryItem* FindFirstItemByType(const FGameplayTag& ItemType);
+
 
 private:
 	friend UInv_InventoryComponent;
