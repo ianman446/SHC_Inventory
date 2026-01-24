@@ -27,7 +27,9 @@ void UInv_InventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 
 void UInv_InventoryComponent::TryAddItem(UInv_ItemComponent* ItemComponent)
 {
+	//Check inventory to see if there is room for the item, if there is, store the Result of the first index that can fit the item in Result.
 	FInv_SlotAvailabilityResult Result = InventoryMenu->HasRoomForItem(ItemComponent);
+	UE_LOG(LogTemp, Warning, TEXT("stackable? $s"), Result.bStackable ? TEXT("Yes") : TEXT("No"));
 
 	UInv_InventoryItem* FoundItem = InventoryList.FindFirstItemByType(ItemComponent->GetItemManifest().GetItemType());
 	Result.Item = FoundItem;

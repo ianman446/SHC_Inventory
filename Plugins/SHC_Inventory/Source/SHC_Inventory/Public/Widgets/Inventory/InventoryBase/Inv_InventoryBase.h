@@ -15,7 +15,5 @@ class SHC_INVENTORY_API UInv_InventoryBase : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	virtual FInv_SlotAvailabilityResult HasRoomForItem(UInv_ItemComponent* ItemComponent) const {
-		return FInv_SlotAvailabilityResult();
-	}
+	virtual FInv_SlotAvailabilityResult HasRoomForItem(UInv_ItemComponent* ItemComponent) const { return FInv_SlotAvailabilityResult(); }
 };

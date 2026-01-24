@@ -2,9 +2,9 @@
 
 
 #include "Player/Inv_PlayerController.h"
+
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
-#include "InputMappingContext.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h" 
 #include "Items/Components/Inv_ItemComponent.h"
@@ -66,7 +66,7 @@ void AInv_PlayerController::PrimaryInteract()
 
     UInv_ItemComponent* ItemComp = ThisActor->FindComponentByClass<UInv_ItemComponent>();
     if (!IsValid(ItemComp) || !InventoryComponent.IsValid()) return;
-
+ 
     InventoryComponent->TryAddItem(ItemComp);
 }
 
