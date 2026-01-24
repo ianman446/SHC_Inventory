@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Net/Serialization/FastArraySerializer.h"
+
 #include "Inv_FastArray.generated.h"
 
-class UInv_InventoryComponent;
-class UInv_ItemComponent;
-class UInv_InventoryItem;
 struct FGameplayTag;
+class UInv_InventoryComponent;
+class UInv_InventoryItem;
+class UInv_ItemComponent;
 
 /** A single entry in an inventory */
 USTRUCT(BlueprintType)
@@ -18,7 +19,7 @@ struct FInv_InventoryEntry : public FFastArraySerializerItem
 	GENERATED_BODY()
 
 	FInv_InventoryEntry() {}
-	
+
 private:
 	friend struct FInv_InventoryFastArray;
 	friend UInv_InventoryComponent;
@@ -53,11 +54,10 @@ struct FInv_InventoryFastArray : public FFastArraySerializer
 	void RemoveEntry(UInv_InventoryItem* Item);
 	UInv_InventoryItem* FindFirstItemByType(const FGameplayTag& ItemType);
 
-
 private:
 	friend UInv_InventoryComponent;
 
-	//Replicated list of items
+	// Replicated list of items
 	UPROPERTY()
 	TArray<FInv_InventoryEntry> Entries;
 
@@ -68,5 +68,5 @@ private:
 template<>
 struct TStructOpsTypeTraits<FInv_InventoryFastArray> : public TStructOpsTypeTraitsBase2<FInv_InventoryFastArray>
 {
-	enum { WithNetDeltaSerializer = true};
+	enum { WithNetDeltaSerializer = true };
 };

@@ -2,6 +2,7 @@
 
 
 #include "Widgets/HUD/Inv_InfoMessage.h"
+
 #include "Components/TextBlock.h"
 
 void UInv_InfoMessage::NativeOnInitialized()

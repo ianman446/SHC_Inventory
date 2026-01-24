@@ -7,6 +7,7 @@
 #include "Widgets/Inventory/InventoryBase/Inv_InventoryBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Items/Inv_InventoryItem.h"
+#include "Items/Fragments/Inv_ItemFragment.h"
 
 
 UInv_InventoryComponent::UInv_InventoryComponent() : InventoryList(this)
@@ -28,49 +29,61 @@ void UInv_InventoryComponent::TryAddItem(UInv_ItemComponent* ItemComponent)
 {
 	FInv_SlotAvailabilityResult Result = InventoryMenu->HasRoomForItem(ItemComponent);
 
-
-    UInv_InventoryItem* FoundItem = InventoryList.FindFirstItemByType(ItemComponent->GetItemManifest().GetItemType());
-    Result.Item = FoundItem;
-
+	UInv_InventoryItem* FoundItem = InventoryList.FindFirstItemByType(ItemComponent->GetItemManifest().GetItemType());
+	Result.Item = FoundItem;
 
 	if (Result.TotalRoomToFill == 0)
 	{
 		NoRoomInInventory.Broadcast();
 		return;
-	}	
+	}
 
 	if (Result.Item.IsValid() && Result.bStackable)
 	{
-		// TODO: Add to existing item stacks, do not add new items
-
+		// Add stacks to an item that already exists in the inventory. We only want to update the stack count,
+		// not create a new item of this type.
+		OnStackChange.Broadcast(Result);
 		Server_AddStacksToItem(ItemComponent, Result.TotalRoomToFill, Result.Remainder);
 	}
 	else if (Result.TotalRoomToFill > 0)
 	{
-		// This item type doesn't exist in the inventory. Create a new one and update all slots
+		// This item type doesn't exist in the inventory. Create a new one and update all pertinent slots.
 		Server_AddNewItem(ItemComponent, Result.bStackable ? Result.TotalRoomToFill : 0);
 	}
-
 }
 
 void UInv_InventoryComponent::Server_AddNewItem_Implementation(UInv_ItemComponent* ItemComponent, int32 StackCount)
 {
 	UInv_InventoryItem* NewItem = InventoryList.AddEntry(ItemComponent);
+	NewItem->SetTotalStackCount(StackCount);
 
 	if (GetOwner()->GetNetMode() == NM_ListenServer || GetOwner()->GetNetMode() == NM_Standalone)
 	{
 		OnItemAdded.Broadcast(NewItem);
 	}
 
-	// TODO: tell owning actor to be destroyed.
+	ItemComponent->PickedUp();
 }
 
 void UInv_InventoryComponent::Server_AddStacksToItem_Implementation(UInv_ItemComponent* ItemComponent, int32 StackCount, int32 Remainder)
 {
+	const FGameplayTag& ItemType = IsValid(ItemComponent) ? ItemComponent->GetItemManifest().GetItemType() : FGameplayTag::EmptyTag;
+	UInv_InventoryItem* Item = InventoryList.FindFirstItemByType(ItemType);
+	if (!IsValid(Item)) return;
 
+	Item->SetTotalStackCount(Item->GetTotalStackCount() + StackCount);
+
+	if (Remainder == 0)
+	{
+		ItemComponent->PickedUp();
+	}
+	else if (FInv_StackableFragment* StackableFragment = ItemComponent->GetItemManifest().GetFragmentOfTypeMutable<FInv_StackableFragment>())
+	{
+		StackableFragment->SetStackCount(Remainder);
+	}
 }
 
-void UInv_InventoryComponent::ToggleInventory()
+void UInv_InventoryComponent::ToggleInventoryMenu()
 {
 	if (bInventoryMenuOpen)
 	{
@@ -79,7 +92,7 @@ void UInv_InventoryComponent::ToggleInventory()
 	else
 	{
 		OpenInventoryMenu();
-	}	
+	}
 }
 
 void UInv_InventoryComponent::AddRepSubObj(UObject* SubObj)
@@ -91,16 +104,33 @@ void UInv_InventoryComponent::AddRepSubObj(UObject* SubObj)
 	
 }
 
+void UInv_InventoryComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	ConstructInventory();
+}
+
+void UInv_InventoryComponent::ConstructInventory()
+{
+	OwningController = Cast<APlayerController>(GetOwner());
+	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."))
+		if (!OwningController->IsLocalController()) return;
+
+	InventoryMenu = CreateWidget<UInv_InventoryBase>(OwningController.Get(), InventoryMenuClass);
+	InventoryMenu->AddToViewport();
+	CloseInventoryMenu();
+}
+
 void UInv_InventoryComponent::OpenInventoryMenu()
 {
-	if(!IsValid(InventoryMenu)) return;
+	if (!IsValid(InventoryMenu)) return;
 
 	InventoryMenu->SetVisibility(ESlateVisibility::Visible);
 	bInventoryMenuOpen = true;
-	
+
 	if (!OwningController.IsValid()) return;
-	
-	
+
 	FInputModeGameAndUI InputMode;
 	OwningController->SetInputMode(InputMode);
 	OwningController->SetShowMouseCursor(true);
@@ -119,23 +149,3 @@ void UInv_InventoryComponent::CloseInventoryMenu()
 	OwningController->SetInputMode(InputMode);
 	OwningController->SetShowMouseCursor(false);
 }
-
-void UInv_InventoryComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	ConstructInventory();
-}
-
-void UInv_InventoryComponent::ConstructInventory()
-{
-	OwningController = Cast<APlayerController>(GetOwner());
-	checkf(OwningController.IsValid(), TEXT("Inventory Component should have a Player Controller as Owner."));
-	if (!OwningController->IsLocalController()) return;
-
-	InventoryMenu = CreateWidget<UInv_InventoryBase>(OwningController.Get(), InventoryMenuClass);
-	InventoryMenu->AddToViewport();
-
-	CloseInventoryMenu();
-}
-

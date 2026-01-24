@@ -1,13 +1,14 @@
 #include "InventoryManagement/FastArray/Inv_FastArray.h"
+
+#include "InventoryManagement/Components/Inv_InventoryComponent.h"
 #include "Items/Inv_InventoryItem.h"
 #include "Items/Components/Inv_ItemComponent.h"
-#include "InventoryManagement/Components/Inv_InventoryComponent.h"
 
 TArray<UInv_InventoryItem*> FInv_InventoryFastArray::GetAllItems() const
 {
     TArray<UInv_InventoryItem*> Results;
     Results.Reserve(Entries.Num());
-    for (const FInv_InventoryEntry & Entry : Entries)
+    for (const auto& Entry : Entries)
     {
         if (!IsValid(Entry.Item)) continue;
         Results.Add(Entry.Item);
@@ -64,7 +65,6 @@ UInv_InventoryItem* FInv_InventoryFastArray::AddEntry(UInv_InventoryItem* Item)
     NewEntry.Item = Item;
 
     MarkItemDirty(NewEntry);
-
     return Item;
 }
 
@@ -83,9 +83,9 @@ void FInv_InventoryFastArray::RemoveEntry(UInv_InventoryItem* Item)
 
 UInv_InventoryItem* FInv_InventoryFastArray::FindFirstItemByType(const FGameplayTag& ItemType)
 {
-    auto* FoundItem = Entries.FindByPredicate([Type = ItemType](const FInv_InventoryEntry& Entry)
-    {
-            return IsValid(Entry.Item) && Entry.Item->GetItemManifest().GetItemType().MatchesTagExact(Type);
-    });
+    auto* FoundItem = Entries.FindByPredicate([ItemType = ItemType](const FInv_InventoryEntry& Entry)
+        {
+            return IsValid(Entry.Item) && Entry.Item->GetItemManifest().GetItemType().MatchesTagExact(ItemType);
+        });
     return FoundItem ? FoundItem->Item : nullptr;
 }

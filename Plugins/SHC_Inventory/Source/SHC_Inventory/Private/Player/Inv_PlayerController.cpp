@@ -23,7 +23,15 @@ AInv_PlayerController::AInv_PlayerController()
 void AInv_PlayerController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
     TraceForItem();
+}
+
+void AInv_PlayerController::ToggleInventory()
+{
+    if (!InventoryComponent.IsValid()) return;
+
+    InventoryComponent->ToggleInventoryMenu();
 }
 
 void AInv_PlayerController::BeginPlay()
@@ -54,27 +62,17 @@ void AInv_PlayerController::SetupInputComponent()
 
 void AInv_PlayerController::PrimaryInteract()
 {
-    
     if (!ThisActor.IsValid()) return;
-    
+
     UInv_ItemComponent* ItemComp = ThisActor->FindComponentByClass<UInv_ItemComponent>();
     if (!IsValid(ItemComp) || !InventoryComponent.IsValid()) return;
-    
+
     InventoryComponent->TryAddItem(ItemComp);
-    
-}
-
-void AInv_PlayerController::ToggleInventory()
-{
-    if (!InventoryComponent.IsValid()) return;
-
-    InventoryComponent->ToggleInventory();
 }
 
 void AInv_PlayerController::CreateHUDWidget()
 {
     if (!IsLocalController()) return;
-
     HUDWidget = CreateWidget<UInv_HUDWidget>(this, HUDWidgetClass);
     if (IsValid(HUDWidget))
     {

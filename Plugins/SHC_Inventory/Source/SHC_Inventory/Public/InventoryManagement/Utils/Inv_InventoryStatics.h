@@ -33,7 +33,7 @@ void UInv_InventoryStatics::ForEach2D(TArray<T>& Array, int32 Index, const FIntP
 	{
 		for (int32 i = 0; i < Range2D.X; ++i)
 		{
-			const FIntPoint Coordinates = UInv_WidgetUtils::GetPositionFromIndex(Index, GridColumns) + FIntPoint(i,j);
+			const FIntPoint Coordinates = UInv_WidgetUtils::GetPositionFromIndex(Index, GridColumns) + FIntPoint(i, j);
 			const int32 TileIndex = UInv_WidgetUtils::GetIndexFromPosition(Coordinates, GridColumns);
 			if (Array.IsValidIndex(TileIndex))
 			{
