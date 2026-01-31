@@ -6,13 +6,15 @@
 #include "Blueprint/UserWidget.h"
 #include "Inv_SlottedItem.generated.h"
 
+class UInv_InventoryItem;
 /**
  * 
  */
 
 class UImage;
-class UInv_InventoryItem;
 class UTextBlock;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSlottedItemClicked, int32, GridIndex, const FPointerEvent&, MouseEvent);
 
 UCLASS()
 class SHC_INVENTORY_API UInv_SlottedItem : public UUserWidget
@@ -20,25 +22,21 @@ class SHC_INVENTORY_API UInv_SlottedItem : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	
-	UImage* GetImageIcon() const { return Image_Icon; }
-
-	int32 GetGridIndex() const { return GridIndex; }
-	void SetGridIndex(int32 Index) { GridIndex = Index; }
-
-	FIntPoint GetGridDimensions() const { return GridDimensions; }
-	void SetGridDimensions(const FIntPoint& Dimensions) { GridDimensions = Dimensions; }
-
-	UInv_InventoryItem* GetInventoryItem() const { return InventoryItem.Get(); }
-	void SetInventoryItem(UInv_InventoryItem* Item);
+    virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 
 	bool IsStackable() const { return bIsStackable; }
 	void SetIsStackable(bool bStackable) { bIsStackable = bStackable; }
-
+	UImage* GetImageIcon() const { return Image_Icon; }
+	int32 GetGridIndex() const { return GridIndex; }
+	void SetGridIndex(int32 Index) { GridIndex = Index; }
+	FIntPoint GetGridDimensions() const { return GridDimensions; }
+	void SetGridDimensions(const FIntPoint& Dimensions) { GridDimensions = Dimensions; }
+	UInv_InventoryItem* GetInventoryItem() const { return InventoryItem.Get(); }
+	void SetInventoryItem(UInv_InventoryItem* Item);
 	void SetImageBrush(const FSlateBrush& Brush) const;
-
 	void UpdateStackCount(int32 StackCount);
 
+	FSlottedItemClicked OnSlottedItemClicked;
 private:
 
 	UPROPERTY(meta = (BindWidget))
