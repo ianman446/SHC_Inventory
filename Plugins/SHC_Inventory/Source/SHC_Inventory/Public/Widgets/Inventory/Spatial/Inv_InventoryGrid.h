@@ -31,13 +31,15 @@ class SHC_INVENTORY_API UInv_InventoryGrid : public UUserWidget
 public:
 	virtual void NativeOnInitialized() override;
     virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
 	EInv_ItemCategory GetItemCategory() const { return ItemCategory; }
-
 	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_ItemComponent* ItemComponent);
+	void ShowCursor();
+	void HideCursor();
 	
 	UFUNCTION()
 	void AddItem(UInv_InventoryItem* Item);
+
+
 
 private:
 
@@ -92,13 +94,38 @@ private:
 	void HighlightSlots(const int32 Index, const FIntPoint& Dimensions);
 	void UnHighlightSlots(const int32 Index, const FIntPoint& Dimensions);
 	void ChangeHoverType(const int32 Index, const FIntPoint& Dimensions, EInv_GridSlotState GridSlotState);
-   
+	void PutDownOnIndex(const int32 Index);
+	void ClearHoverItem();
+	UUserWidget* GetVisibleCursorWidget();
+	UUserWidget* GetHiddenCursorWidget();
+
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<UUserWidget> VisibleCursorWidgetClass;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TSubclassOf<UUserWidget> HiddenCursorWidgetClass;
+
+    UPROPERTY()    
+	TObjectPtr<UUserWidget> VisibleCursorWidget;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> HiddenCursorWidget;
 
 	UFUNCTION()
 	void AddStacks(const FInv_SlotAvailabilityResult& Result);
 
 	UFUNCTION()
     void OnSlottedItemClicked(int32 GridIndex, const FPointerEvent& MouseEvent);
+
+	UFUNCTION()
+    void OnGridSlotClicked(int32 GridIndex, const FPointerEvent& MouseEvent);
+
+	UFUNCTION()
+    void OnGridSlotHovered(int32 GridIndex, const FPointerEvent& MouseEvent);
+
+	UFUNCTION()
+	void OnGridSlotUnhovered(int32 GridIndex, const FPointerEvent& MouseEvent);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")
 	EInv_ItemCategory ItemCategory;

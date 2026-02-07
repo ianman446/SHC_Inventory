@@ -21,7 +21,7 @@ class SHC_INVENTORY_API UInv_HoverItem : public UUserWidget
 	GENERATED_BODY()
 public:
     void SetImageBrush(const FSlateBrush& Brush) const;
-    void UpdateStackCount(const int32 Count) const;
+    void UpdateStackCount(const int32 Count) ;
 
     FGameplayTag GetItemTag() const;
     int32 GetStackCount() const { return StackCount; }

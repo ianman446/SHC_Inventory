@@ -99,6 +99,8 @@ private:
 	UFUNCTION()
 	void ShowItemCategory03();
 
-	void SetActiveGrid(UInv_InventoryGrid* Grid, UButton* Button);
 	void DisableButton(UButton* Button);
+	void SetActiveGrid(UInv_InventoryGrid* Grid, UButton* Button);
+    TWeakObjectPtr<UInv_InventoryGrid> ActiveGrid;
+
 };
