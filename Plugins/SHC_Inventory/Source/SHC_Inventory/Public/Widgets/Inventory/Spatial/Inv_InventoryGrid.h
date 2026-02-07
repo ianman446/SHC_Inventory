@@ -19,7 +19,7 @@ class UInv_GridSlot;
 class UInv_InventoryComponent;
 struct FGameplayTag;
 class UInv_HoverItem;
-
+enum class EInv_GridSlotState : uint8;
 /**
  * 
  */
@@ -87,7 +87,12 @@ private:
     EInv_TileQuadrant CalculateTileQuadrant(const FVector2D& CanvasPosition, const FVector2D& MousePosition) const;
 	void OnTileParametersUpdated(const FInv_TileParameters& Parameters);
     FIntPoint CalculateStartingCoordinates(const FIntPoint& Coordinates, const FIntPoint& Dimensions, const EInv_TileQuadrant Quadrant) const;
-
+	FInv_SpaceQueryResult CheckHoverPosition(const FIntPoint& Position, const FIntPoint& Dimensions);
+	bool CursorExitedCanvas(const FVector2D& BoundaryPos, const FVector2D& BoundarySize, const FVector2D& Location);
+	void HighlightSlots(const int32 Index, const FIntPoint& Dimensions);
+	void UnHighlightSlots(const int32 Index, const FIntPoint& Dimensions);
+	void ChangeHoverType(const int32 Index, const FIntPoint& Dimensions, EInv_GridSlotState GridSlotState);
+   
 
 	UFUNCTION()
 	void AddStacks(const FInv_SlotAvailabilityResult& Result);
@@ -128,6 +133,14 @@ private:
 	UPROPERTY()
 	TObjectPtr<UInv_HoverItem> HoverItem;
 
-    FInv_TileParameters TileParameters;
-    FInv_TileParameters PreviousTileParameters;
+	FInv_TileParameters TileParameters;
+	FInv_TileParameters LastTileParameters;
+
+	// Index where an item would be placed if we click on the grid at a valid location
+	int32 ItemDropIndex{ INDEX_NONE };
+	FInv_SpaceQueryResult CurrentQueryResult;
+	bool bMouseWithinCanvas;
+	bool bLastMouseWithinCanvas;
+	int32 LastHighlightedIndex;
+	FIntPoint LastHighlightedDimensions;
 };
