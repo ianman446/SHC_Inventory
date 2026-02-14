@@ -22,6 +22,15 @@ void UInv_SpatialInventory::NativeOnInitialized()
 	Button_ItemCategory02->OnClicked.AddDynamic(this, &ThisClass::ShowItemCategory02);
 	Button_ItemCategory03->OnClicked.AddDynamic(this, &ThisClass::ShowItemCategory03);
 
+    Grid_Equippables->SetOwningCanvasPanel(CanvasPanel);
+    Grid_Consumables->SetOwningCanvasPanel(CanvasPanel);
+    Grid_Craftables->SetOwningCanvasPanel(CanvasPanel);
+    Grid_Quest->SetOwningCanvasPanel(CanvasPanel);
+    Grid_ItemCategory01->SetOwningCanvasPanel(CanvasPanel);
+    Grid_ItemCategory02->SetOwningCanvasPanel(CanvasPanel);
+    Grid_ItemCategory03->SetOwningCanvasPanel(CanvasPanel);
+    Grid_All->SetOwningCanvasPanel(CanvasPanel);
+
 	ShowAllItems();
 }
 

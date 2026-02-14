@@ -9,6 +9,7 @@
 class UInv_InventoryGrid;
 class UWidgetSwitcher;
 class UButton;
+class UCanvasPanel;
 /**
  * 
  */
@@ -23,6 +24,9 @@ public:
 	virtual FInv_SlotAvailabilityResult HasRoomForItem(UInv_ItemComponent* ItemComponent) const override;
 
 private:
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCanvasPanel> CanvasPanel;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UWidgetSwitcher> Switcher;

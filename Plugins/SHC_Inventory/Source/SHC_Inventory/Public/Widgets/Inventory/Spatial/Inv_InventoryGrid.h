@@ -20,6 +20,8 @@ class UInv_InventoryComponent;
 struct FGameplayTag;
 class UInv_HoverItem;
 enum class EInv_GridSlotState : uint8;
+class UInv_ItemPopUp;
+
 /**
  * 
  */
@@ -35,6 +37,7 @@ public:
 	FInv_SlotAvailabilityResult HasRoomForItem(const UInv_ItemComponent* ItemComponent);
 	void ShowCursor();
 	void HideCursor();
+	void SetOwningCanvasPanel(UCanvasPanel* OwningCanvas);
 	
 	UFUNCTION()
 	void AddItem(UInv_InventoryItem* Item);
@@ -44,6 +47,7 @@ public:
 private:
 
 	TWeakObjectPtr<UInv_InventoryComponent> InventoryComponent;
+    TWeakObjectPtr<UCanvasPanel> OwningCanvasPanel;
 
 	void ConstructGrid();
 
@@ -106,8 +110,15 @@ private:
 	void ConsumeHoverItemStacks(const int32 ClickedStackCount, const int32 HoveredStackCount, const int32 Index);
     bool ShouldFillInStack(const int32 RoomInClickedSlot, const int32 HoveredStackCount) const;
     void FillInStack(const int32 FillAmount, const int32 Remainder, const int32 Index);
+	void CreatItemPopUp(const int32 GridIndex);
 
-    UPROPERTY(EditAnywhere, Category = "Inventory")
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+    TSubclassOf<UInv_ItemPopUp> ItemPopUpClass;
+
+	UPROPERTY()
+    TObjectPtr<UInv_ItemPopUp> ItemPopUp;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TSubclassOf<UUserWidget> VisibleCursorWidgetClass;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
@@ -133,6 +144,16 @@ private:
 
 	UFUNCTION()
 	void OnGridSlotUnhovered(int32 GridIndex, const FPointerEvent& MouseEvent);
+
+	UFUNCTION()
+	void OnPopUpMenuSplit(int32 SplitAmount, int32 Index);
+
+	UFUNCTION()
+    void OnPopUpMenuConsume(int32 Index);
+
+	UFUNCTION()
+    void OnPopUpMenuDrop(int32 Index);
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")
 	EInv_ItemCategory ItemCategory;
@@ -166,6 +187,10 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UInv_HoverItem> HoverItem;
+
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    FVector2D ItemPopUpOffset;
 
 	FInv_TileParameters TileParameters;
 	FInv_TileParameters LastTileParameters;

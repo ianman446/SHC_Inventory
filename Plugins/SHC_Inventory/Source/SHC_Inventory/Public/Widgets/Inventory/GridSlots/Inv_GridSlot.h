@@ -8,6 +8,7 @@
 
 class UImage;
 class UInv_InventoryItem;
+class UInv_ItemPopUp;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGridSlotEvent, int32, GridIndex, const FPointerEvent&, MouseEvent);
 
@@ -45,6 +46,8 @@ public:
 	void SetUpperLeftIndex(int32 Index) { UpperLeftIndex = Index; }
 	bool IsAvailable() const { return bAvailable; }
 	void SetAvailable(bool bIsAvailable) { bAvailable = bIsAvailable; }
+	void SetItemPopUp(UInv_ItemPopUp* PopUp);
+	UInv_ItemPopUp* GetItemPopUp() const;
 
 	void SetOccupiedTexture();
 	void SetUnoccupiedTexture();
@@ -56,11 +59,13 @@ public:
 	FGridSlotEvent GridSlotUnhovered;
 
 private:
-	int32 TileIndex{ INDEX_NONE };
-	int32 StackCount{ 0 };
-	int32 UpperLeftIndex{ INDEX_NONE };
+	int32 TileIndex = INDEX_NONE;
+	int32 UpperLeftIndex = INDEX_NONE;
+	int32 StackCount = 0;
+	bool bAvailable = true;
 	TWeakObjectPtr<UInv_InventoryItem> InventoryItem;
-	bool bAvailable{ true };
+	TWeakObjectPtr<UInv_ItemPopUp> ItemPopUp;
+	
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> Image_GridSlot;
@@ -78,4 +83,8 @@ private:
 	FSlateBrush Brush_GrayedOut;
 
 	EInv_GridSlotState GridSlotState;
+
+	UFUNCTION()
+	void OnItemPopUpDestruct(UUserWidget* Menu);
+
 };
