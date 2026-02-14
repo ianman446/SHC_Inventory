@@ -617,27 +617,39 @@ void UInv_InventoryGrid::OnSlottedItemClicked(int32 GridIndex, const FPointerEve
 	// is the hovered item and the occupying item the same? (stacking)
 	if (IsSameStackable(ClickedInventoryItem))
 	{
+		// Update the stack count of the clicked slot and the hover item
 		const int32 ClickedStackCount = GridSlots[GridIndex]->GetStackCount();
 		const FInv_StackableFragment* StackableFragment = ClickedInventoryItem->GetItemManifest().GetFragmentOfType<FInv_StackableFragment>();
 		const int32 MaxStackSize = StackableFragment->GetMaxStackSize();
 		const int32 RoomInClickedSlot = MaxStackSize - ClickedStackCount;
 		const int32 HoveredStackCount = HoverItem->GetStackCount();
 
-        // Update the stack count of the clicked slot and the hover item
+		// Should we swap their stacks?
 		if(ShouldSwapStackCounts(RoomInClickedSlot, HoveredStackCount, MaxStackSize))
 		{
             SwapStackCounts(ClickedStackCount, HoveredStackCount, GridIndex);
+			return;
         }
 
-		// Should we swap their stacks?
+		// should we comsume the hover item's stacks?
 		if (ShouldConsumeHoverItemStacks(RoomInClickedSlot, HoveredStackCount))
 		{
             ConsumeHoverItemStacks(ClickedStackCount, HoveredStackCount, GridIndex);
+			return;
         }
-		// should we comsume the hover item's stacks?
+		
 		// Should we fill in the stacks of the occupying item? (and not consume the hover item)
+		if (ShouldFillInStack(RoomInClickedSlot, HoveredStackCount))
+		{
+            FillInStack(RoomInClickedSlot, HoveredStackCount - RoomInClickedSlot, GridIndex);
+			return;
+		}
+		
 		// Is there room in the occupying item?
-		return;
+		if (RoomInClickedSlot == 0)
+		{
+			return;
+		}		
 	}
 
 	// Swap the occupying item and the hovered item
@@ -802,6 +814,25 @@ void UInv_InventoryGrid::ConsumeHoverItemStacks(const int32 ClickedStackCount, c
     const FInv_GridFragment* GridFragment = GridSlots[Index]->GetInventoryItem()->GetItemManifest().GetFragmentOfType<FInv_GridFragment>();
 	const FIntPoint Dimensions = GridFragment ? GridFragment->GetGridSize() : FIntPoint(1, 1);
     HighlightSlots(Index, Dimensions);
+}
+
+bool UInv_InventoryGrid::ShouldFillInStack(const int32 RoomInClickedSlot, const int32 HoveredStackCount) const
+{
+
+	return RoomInClickedSlot < HoveredStackCount;
+}
+
+void UInv_InventoryGrid::FillInStack(const int32 FillAmount, const int32 Remainder, const int32 Index)
+{
+    UInv_GridSlot* GridSlot = GridSlots[Index];
+    const int32 NewStackCount = GridSlot->GetStackCount() + FillAmount;
+
+    GridSlot->SetStackCount(NewStackCount);
+
+    UInv_SlottedItem* ClickedSlottedItem = SlottedItems.FindChecked(Index);
+    ClickedSlottedItem->UpdateStackCount(NewStackCount);
+
+	HoverItem->UpdateStackCount(Remainder);
 }
 
 void UInv_InventoryGrid::ShowCursor()
