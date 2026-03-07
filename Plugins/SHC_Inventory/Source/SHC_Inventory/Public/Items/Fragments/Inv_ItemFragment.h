@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+
 #include "Inv_ItemFragment.generated.h"
+
+class APlayerController;
 
 USTRUCT(BlueprintType)
 struct FInv_ItemFragment
@@ -19,7 +22,7 @@ struct FInv_ItemFragment
     FInv_ItemFragment(const FInv_ItemFragment&) = default;              // Constructor
     FInv_ItemFragment& operator=(const FInv_ItemFragment&) = default;   // Constructor
     FInv_ItemFragment(FInv_ItemFragment&&) = default;                   // Move operation
-    FInv_ItemFragment& operator=(FInv_ItemFragment&&) = default;        // move operation
+    FInv_ItemFragment& operator=(FInv_ItemFragment&&) = default;        // Move operation
     virtual ~FInv_ItemFragment() {}                                     // Destructor
 
     FGameplayTag GetFragmentTag() const { return FragmentTag; }
@@ -27,7 +30,7 @@ struct FInv_ItemFragment
 
 private:
 
-    UPROPERTY(EditAnywhere, Category = "Inventory")
+    UPROPERTY(EditAnywhere, Category = "Inventory", meta = (Categories="FragmentTags"))
     FGameplayTag FragmentTag = FGameplayTag::EmptyTag;
 };
 
@@ -89,5 +92,39 @@ private:
 
     UPROPERTY(EditAnywhere, Category = "Inventory")
     int32 StackCount = 1;
+
+};
+
+//Parent Fragment for all Consumable Item Fragments. Contains OnConsume function which can be implemented by child fragments to add functionality when consuming an item.
+USTRUCT(BlueprintType)
+struct FInv_ConsumableFragment : public FInv_ItemFragment
+{
+    GENERATED_BODY()
+
+    virtual void OnConsume(APlayerController* PC) {}; 
+
+};
+
+USTRUCT(BlueprintType)
+struct FInv_HealthPotionFragment : public FInv_ConsumableFragment
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    float HealAmount = 50.f;
+
+    virtual void OnConsume(APlayerController* PC) override;
+
+};
+
+USTRUCT(BlueprintType)
+struct FInv_ManaPotionFragment : public FInv_ConsumableFragment
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    float ManaAmount = 50.f;
+
+    virtual void OnConsume(APlayerController* PC) override;
 
 };
