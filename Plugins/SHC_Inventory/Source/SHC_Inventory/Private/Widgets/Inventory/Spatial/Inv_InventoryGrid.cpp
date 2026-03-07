@@ -618,7 +618,7 @@ void UInv_InventoryGrid::OnSlottedItemClicked(int32 GridIndex, const FPointerEve
     // is it a right click with a valid hover item? if so, display context menu for the item.
 	if (IsRightClick(MouseEvent))
 	{
-		CreatItemPopUp(GridIndex);
+		CreateItemPopUp(GridIndex);
 		return;
 	}
 	// is the hovered item and the occupying item the same? (stacking)
@@ -663,7 +663,7 @@ void UInv_InventoryGrid::OnSlottedItemClicked(int32 GridIndex, const FPointerEve
     SwapWithHoverItem(ClickedInventoryItem, GridIndex);
 }
 
-void UInv_InventoryGrid::CreatItemPopUp(const int32 GridIndex)
+void UInv_InventoryGrid::CreateItemPopUp(const int32 GridIndex)
 {
     UInv_InventoryItem* RightClickedItem = GridSlots[GridIndex]->GetInventoryItem().Get();
 	if(!IsValid(RightClickedItem)) return;
@@ -702,6 +702,8 @@ void UInv_InventoryGrid::CreatItemPopUp(const int32 GridIndex)
 	}
 
 }
+
+
 
 FVector2D UInv_InventoryGrid::GetDrawSize(const FInv_GridFragment* GridFragment) const
 {
@@ -941,10 +943,27 @@ void UInv_InventoryGrid::OnPopUpMenuSplit(int32 SplitAmount, int32 Index)
 
 void UInv_InventoryGrid::OnPopUpMenuConsume(int32 Index)
 {
+
 }
 
 void UInv_InventoryGrid::OnPopUpMenuDrop(int32 Index)
 {
+	UInv_InventoryItem* RightClickedItem = GridSlots[Index]->GetInventoryItem().Get();
+	if (!IsValid(RightClickedItem)) return;
+
+	PickUp(RightClickedItem, Index);
+	DropItem();
+}
+
+void UInv_InventoryGrid::DropItem()
+{
+	if (!IsValid(HoverItem)) return;
+    if (!IsValid(HoverItem->GetInventoryItem())) return;
+
+	InventoryComponent->Server_DropItem(HoverItem->GetInventoryItem(), HoverItem->GetStackCount());
+
+	ClearHoverItem();
+    ShowCursor();
 }
 
 bool UInv_InventoryGrid::MatchesCategory(const UInv_InventoryItem* Item) const
