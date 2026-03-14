@@ -8,6 +8,7 @@
 #include "Inv_InventoryBase.generated.h"
 
 class UInv_ItemComponent;
+class UInv_InventoryItem;
 
 UCLASS()
 class SHC_INVENTORY_API UInv_InventoryBase : public UUserWidget
@@ -16,4 +17,7 @@ class SHC_INVENTORY_API UInv_InventoryBase : public UUserWidget
 	
 public:
 	virtual FInv_SlotAvailabilityResult HasRoomForItem(UInv_ItemComponent* ItemComponent) const { return FInv_SlotAvailabilityResult(); }
+	virtual void OnItemHovered(UInv_InventoryItem* Item) { }
+    virtual void OnItemUnhovered() { }
+    virtual bool HasHoveredItem() const { return false; }
 };

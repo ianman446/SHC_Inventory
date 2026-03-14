@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Widgets/Inventory/InventoryBase/Inv_InventoryBase.h"
+#include "Widgets/ItemDescription/Inv_ItemDescription.h"
 #include "Inv_SpatialInventory.generated.h"
 
 class UInv_InventoryGrid;
@@ -23,7 +24,13 @@ public:
 
     virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 
+    virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 	virtual FInv_SlotAvailabilityResult HasRoomForItem(UInv_ItemComponent* ItemComponent) const override;
+
+    virtual void OnItemHovered(UInv_InventoryItem* Item) override;
+    virtual void OnItemUnhovered() override;
+    virtual bool HasHoveredItem() const override;
 
 private:
 
@@ -81,6 +88,19 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> Button_ItemCategory03;
 
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+    TSubclassOf<UInv_ItemDescription> ItemDescriptionClass;
+
+	UPROPERTY()
+    TObjectPtr<UInv_ItemDescription> ItemDescription;
+
+    FTimerHandle DescriptionTimer;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+    float DescriptionTimerDelay = 0.5f;
+
+    UInv_ItemDescription* GetItemDescription();
+
 	UFUNCTION()
 	void ShowAllItems();
 
@@ -107,6 +127,8 @@ private:
 
 	void DisableButton(UButton* Button);
 	void SetActiveGrid(UInv_InventoryGrid* Grid, UButton* Button);
+    void SetItemDescriptionSizeAndPosition(UInv_ItemDescription* Description, UCanvasPanel* Canvas) const;
+
     TWeakObjectPtr<UInv_InventoryGrid> ActiveGrid;
 
 };

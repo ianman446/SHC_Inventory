@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Types/Inv_GridTypes.h"
 #include "InventoryManagement/Components/Inv_InventoryComponent.h"
+#include "Widgets/Inventory/Spatial/Inv_SpatialInventory.h"
 #include "Items/Components/Inv_ItemComponent.h"
 
 UInv_InventoryComponent* UInv_InventoryStatics::GetInventoryComponent(const APlayerController* PlayerController)
@@ -18,4 +19,28 @@ EInv_ItemCategory UInv_InventoryStatics::GetItemCategoryFromItemComponent(UInv_I
 {
 	if (!IsValid(ItemComp)) return EInv_ItemCategory::None;
 	return ItemComp->GetItemManifest().GetItemCategory();
+}
+
+void UInv_InventoryStatics::ItemHovered(APlayerController* PC, UInv_InventoryItem* Item)
+{
+    UInv_InventoryComponent* IC = GetInventoryComponent(PC);
+	if (!IsValid(IC)) return;
+
+    UInv_InventoryBase* InventoryBase = IC->GetInventoryMenu();
+	if(!IsValid(InventoryBase)) return;
+
+	if (InventoryBase->HasHoveredItem()) return;
+
+    InventoryBase->OnItemHovered(Item);
+}
+
+void UInv_InventoryStatics::ItemUnHovered(APlayerController* PC)
+{
+	UInv_InventoryComponent* IC = GetInventoryComponent(PC);
+	if (!IsValid(IC)) return;
+
+	UInv_InventoryBase* InventoryBase = IC->GetInventoryMenu();
+	if (!IsValid(InventoryBase)) return;
+
+	InventoryBase->OnItemUnhovered();
 }

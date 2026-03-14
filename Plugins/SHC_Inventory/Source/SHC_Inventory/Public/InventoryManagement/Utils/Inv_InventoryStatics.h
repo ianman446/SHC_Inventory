@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Widgets/Utils/Inv_WidgetUtils.h"
+#include "Items/Inv_InventoryItem.h"
 #include "Inv_InventoryStatics.generated.h"
 
 /**
@@ -24,6 +25,12 @@ public:
 
 	template<typename T, typename FuncT>
 	static void ForEach2D(TArray<T>& Array, int32 Index, const FIntPoint& Range2D, int32 GridColumns, const FuncT& Function);
+
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    static void ItemHovered(APlayerController* PC, UInv_InventoryItem* Item);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	static void ItemUnHovered(APlayerController* PC);
 };
 
 template<typename T, typename FuncT>
