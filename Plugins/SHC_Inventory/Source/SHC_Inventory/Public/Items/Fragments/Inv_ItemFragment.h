@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "StructUtils/InstancedStruct.h"
 
 #include "Inv_ItemFragment.generated.h"
 
 class APlayerController;
+class UInv_CompositeBase;
 
 USTRUCT(BlueprintType)
 struct FInv_ItemFragment
@@ -28,10 +30,31 @@ struct FInv_ItemFragment
     FGameplayTag GetFragmentTag() const { return FragmentTag; }
     void SetFragmentTag(FGameplayTag Tag) { FragmentTag = Tag; }
 
+    virtual void Manifest() {}
+
+
 private:
 
     UPROPERTY(EditAnywhere, Category = "Inventory", meta = (Categories="FragmentTags"))
     FGameplayTag FragmentTag = FGameplayTag::EmptyTag;
+};
+
+/*
+* Item Fragment specifically for assimilation into a widget.
+*/
+
+
+
+USTRUCT(BlueprintType)
+struct FInv_InventoryItemFragment : public FInv_ItemFragment
+{
+    GENERATED_BODY()
+
+    virtual void Assimilate(UInv_CompositeBase* Composite) const;
+
+protected:
+
+    bool MatchesWidgetTag(const UInv_CompositeBase* Composite) const;
 };
 
 USTRUCT(BlueprintType)
@@ -56,12 +79,13 @@ private:
 };
 
 USTRUCT(BlueprintType)
-struct FInv_ImageFragment : public FInv_ItemFragment
+struct FInv_ImageFragment : public FInv_InventoryItemFragment
 {
     GENERATED_BODY()
 
     UTexture2D* GetIcon() const { return Icon; }
     void SetIcon(UTexture2D* InIcon) { Icon = InIcon; }
+    virtual void Assimilate(UInv_CompositeBase* Composite) const;
 
     FVector2D GetIconDimensions() const { return IconDimensions; }
     void SetIconDimentions(FVector2D Dimentions) { IconDimensions = Dimentions; }
@@ -72,6 +96,60 @@ private:
 
     UPROPERTY(EditAnywhere, Category = "Inventory")
     FVector2D IconDimensions = FVector2D(44.f, 44.f);
+};
+
+USTRUCT(BlueprintType)
+struct FInv_TextFragment : public FInv_InventoryItemFragment
+{
+    GENERATED_BODY()
+
+    FText GetText() const { return FragmentText; }
+    void SetText(const FText& InText) { FragmentText = InText; }
+    virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+
+private:
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    FText FragmentText;
+};
+
+USTRUCT(BlueprintType)
+struct FInv_LabeledNumberFragment : public FInv_InventoryItemFragment
+{
+    GENERATED_BODY()
+
+    virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+    virtual void Manifest() override;
+    float GetFloatValue() const { return Float_Value; }
+
+    // When manifesting for the first time, this fragment will randomize. Then it will be set to false.
+    bool bRandomizeOnManifest = true;
+
+private:
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    FText Text_Label{};
+
+    UPROPERTY(VisibleAnywhere, Category = "Inventory")
+    float Float_Value = 0.f;
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    float MinValue = 0.f;
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    float MaxValue = 100.f;
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    bool bCollapseLabel = false;
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    bool bCollapseValue = false;
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    int32 MinFractionalDigits = 1;
+
+    UPROPERTY(EditAnywhere, Category = "Inventory")
+    int32 MaxFractionalDigits = 1;
 };
 
 USTRUCT(BlueprintType)
@@ -95,36 +173,46 @@ private:
 
 };
 
+USTRUCT(BlueprintType)
+struct FInv_ConsumeModifier : public FInv_LabeledNumberFragment
+{
+    GENERATED_BODY()
+
+    virtual void OnConsume(APlayerController* PC) {};
+};
+
 //Parent Fragment for all Consumable Item Fragments. Contains OnConsume function which can be implemented by child fragments to add functionality when consuming an item.
 USTRUCT(BlueprintType)
-struct FInv_ConsumableFragment : public FInv_ItemFragment
+struct FInv_ConsumableFragment : public FInv_InventoryItemFragment
 {
     GENERATED_BODY()
 
-    virtual void OnConsume(APlayerController* PC) {}; 
+    virtual void OnConsume(APlayerController* PC);
+    virtual void Assimilate(UInv_CompositeBase* Composite) const override;
+    virtual void Manifest() override;
+
+private:
+
+    UPROPERTY(EditAnywhere, Category = "Inventory", meta = (ExcludeBaseStruct))
+    TArray<TInstancedStruct<FInv_ConsumeModifier>> ConsumeModifiers;
 
 };
 
 USTRUCT(BlueprintType)
-struct FInv_HealthPotionFragment : public FInv_ConsumableFragment
+struct FInv_HealthPotionFragment : public FInv_ConsumeModifier
 {
     GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, Category = "Inventory")
-    float HealAmount = 50.f;
 
     virtual void OnConsume(APlayerController* PC) override;
 
 };
 
 USTRUCT(BlueprintType)
-struct FInv_ManaPotionFragment : public FInv_ConsumableFragment
+struct FInv_ManaPotionFragment : public FInv_ConsumeModifier
 {
     GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, Category = "Inventory")
-    float ManaAmount = 50.f;
 
     virtual void OnConsume(APlayerController* PC) override;
 
 };
+
