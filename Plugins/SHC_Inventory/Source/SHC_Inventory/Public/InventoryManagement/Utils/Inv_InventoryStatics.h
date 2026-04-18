@@ -11,6 +11,10 @@
 /**
  * 
  */
+
+class UInv_HoverItem;
+class UInv_InventoryBase;
+
 UCLASS()
 class SHC_INVENTORY_API UInv_InventoryStatics : public UBlueprintFunctionLibrary
 {
@@ -31,6 +35,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	static void ItemUnHovered(APlayerController* PC);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+    static UInv_HoverItem* GetHoverItemWidget(const APlayerController* PC);
+
+    static UInv_InventoryBase* GetInventoryWidget(const APlayerController* PC);
 };
 
 template<typename T, typename FuncT>

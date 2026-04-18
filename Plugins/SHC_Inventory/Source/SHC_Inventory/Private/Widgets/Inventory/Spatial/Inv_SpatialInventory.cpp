@@ -4,12 +4,17 @@
 #include "InventoryManagement/Utils/Inv_InventoryStatics.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
-//#include "Items/Components/Inv_ItemComponent.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Widgets/Inventory/Spatial/Inv_InventoryGrid.h"
 #include "SHC_Inventory.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Blueprint/WidgetTree.h"
+#include "Widgets/Inventory/HoverItem/Inv_HoverItem.h"
+#include "Widgets/Inventory/GridSlots/Inv_EquippedGridSlot.h"
+#include "Widgets/Inventory/SlottedItems/Inv_EquippedSlottedItem.h"
+#include "InventoryManagement/Components/Inv_InventoryComponent.h"
+
 
 
 void UInv_SpatialInventory::NativeOnInitialized()
@@ -35,6 +40,77 @@ void UInv_SpatialInventory::NativeOnInitialized()
     Grid_All->SetOwningCanvasPanel(CanvasPanel);
 
 	ShowAllItems();
+
+	WidgetTree->ForEachWidget([this](UWidget* Widget)
+	{
+        UInv_EquippedGridSlot* EquippedGridSlot = Cast<UInv_EquippedGridSlot>(Widget);
+		if (IsValid(EquippedGridSlot))
+		{
+            EquippedGridSlots.Add(EquippedGridSlot);
+            EquippedGridSlot->EquippedGridSlotClicked.AddDynamic(this, &ThisClass::EquippedGridSlotClicked);
+        }
+    });
+}
+
+void UInv_SpatialInventory::EquippedGridSlotClicked(UInv_EquippedGridSlot* EquippedGridSlot, const FGameplayTag& EquipmentTypeTag)
+{
+	// check to see if we can equip the hover item
+    if (!CanEquipHoveredItem(EquippedGridSlot, EquipmentTypeTag)) return;
+
+    UInv_HoverItem* HoverItem = GetHoverItem();
+
+    // create an equipped slotted item and add it to the Equipped Grid Slot (call EquippedGridSlot->OnItemEquipped())
+    const float TileSize = UInv_InventoryStatics::GetInventoryWidget(GetOwningPlayer())->GetTileSize();
+    UInv_EquippedSlottedItem* EquippedSlottedItem = EquippedGridSlot->OnItemEquipped(
+		HoverItem->GetInventoryItem(),
+		EquipmentTypeTag, 
+		TileSize);
+	EquippedSlottedItem->OnEquippedSlottedItemClicked.AddDynamic(this, &ThisClass::EquippedSlottedItemClicked);
+	// clear the hover item
+    Grid_Equippables->ClearHoverItem();
+
+	// inform the server that we've equipped an item (potentially unequip an item as well)
+    UInv_InventoryComponent* InventoryComponent = UInv_InventoryStatics::GetInventoryComponent(GetOwningPlayer());
+	check(IsValid(InventoryComponent));
+
+	//RPC
+	InventoryComponent->Server_EquipSlotClicked(HoverItem->GetInventoryItem(), nullptr);
+
+	if(GetOwningPlayer()->GetNetMode() != NM_DedicatedServer)
+	{
+		InventoryComponent->OnItemEquipped.Broadcast(HoverItem->GetInventoryItem());
+    }
+}
+
+void UInv_SpatialInventory::EquippedSlottedItemClicked(UInv_EquippedSlottedItem* EquippedSlottedItem)
+{
+	// remove the item description
+	UInv_InventoryStatics::ItemUnHovered(GetOwningPlayer());
+	if (IsValid(GetHoverItem()) && GetHoverItem()->IsStackable()) return;
+
+	// get item to equip
+    UInv_InventoryItem* ItemToEquip = IsValid(GetHoverItem()) ? GetHoverItem()->GetInventoryItem() : nullptr;
+
+    // get item to unequip (if any)	
+    UInv_InventoryItem* ItemToUnequip = EquippedSlottedItem->GetInventoryItem();
+
+	// get the equipped grid slot holding this item
+    UInv_EquippedGridSlot* EquippedGridSlot = FindSlotWithEquippedItem(ItemToUnequip);
+	
+    // clear the slot of this item (set its iventory item to null and remove the slotted item from the slot)
+    ClearSlotOfItem(EquippedGridSlot);
+
+	// remove of the equipped slotted item from the quipped grid slot
+    RemoveEquippedSlottedItem(EquippedSlottedItem);
+
+	// assign previously erquipped item as the hover item
+	Grid_Equippables->AssignHoverItem(ItemToUnequip);
+
+	// make a new equipped slotted item
+    MakeEquippedSlottedItem(EquippedSlottedItem, EquippedGridSlot, ItemToEquip);
+
+    // broadcast delegates for OnItemEquipped/OnItemUnequipped
+    BroadcastSlotClickedDelegates(ItemToEquip, ItemToUnequip);
 }
 
 FReply UInv_SpatialInventory::NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
@@ -66,6 +142,73 @@ void UInv_SpatialInventory::SetItemDescriptionSizeAndPosition(UInv_ItemDescripti
 		UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwningPlayer()));
 
 	ItemDescriptionCPS->SetPosition(ClampedPosition);
+}
+
+bool UInv_SpatialInventory::CanEquipHoveredItem(UInv_EquippedGridSlot* EquippedGridSlot, const FGameplayTag EquipmentTypeTag) const
+{
+	if (!IsValid(EquippedGridSlot) || EquippedGridSlot->GetInventoryItem().IsValid()) return false;
+
+	UInv_HoverItem* HoverItem = GetHoverItem();
+	if (!IsValid(HoverItem)) return false;
+
+	UInv_InventoryItem* HeldItem = HoverItem->GetInventoryItem();
+
+	return HasHoveredItem() && IsValid(HeldItem) && !HoverItem->IsStackable() && HeldItem->GetItemManifest().GetItemCategory() == EInv_ItemCategory::Equippable && HeldItem->GetItemManifest().GetItemType().MatchesTag(EquipmentTypeTag);
+}
+
+UInv_EquippedGridSlot* UInv_SpatialInventory::FindSlotWithEquippedItem(UInv_InventoryItem* EquippedItem) const
+{
+	auto* FoundEquippedGridSlot = EquippedGridSlots.FindByPredicate([EquippedItem](const UInv_EquippedGridSlot* GridSlot)
+	{
+		return GridSlot->GetInventoryItem() == EquippedItem;
+    });
+    return FoundEquippedGridSlot ? *FoundEquippedGridSlot : nullptr;
+}
+
+void UInv_SpatialInventory::ClearSlotOfItem(UInv_EquippedGridSlot* EquippedGridSlot)
+{
+	if (IsValid(EquippedGridSlot))
+	{
+        EquippedGridSlot->SetEquippedSlottedItem(nullptr);
+		EquippedGridSlot->SetInventoryItem(nullptr);        
+    }
+}
+
+void UInv_SpatialInventory::RemoveEquippedSlottedItem(UInv_EquippedSlottedItem* EquippedSlottedItem)
+{
+	if (!IsValid(EquippedSlottedItem)) return;
+	
+	if (EquippedSlottedItem->OnEquippedSlottedItemClicked.IsAlreadyBound(this, &ThisClass::EquippedSlottedItemClicked))
+	{
+		EquippedSlottedItem->OnEquippedSlottedItemClicked.RemoveDynamic(this, &ThisClass::EquippedSlottedItemClicked);
+    }
+	EquippedSlottedItem->RemoveFromParent();
+}
+
+void UInv_SpatialInventory::MakeEquippedSlottedItem(UInv_EquippedSlottedItem* EquippedSlottedItem, UInv_EquippedGridSlot* EquippedGridSlot, UInv_InventoryItem* ItemToEquip)
+{
+	if (!IsValid(EquippedGridSlot)) return;
+
+	UInv_EquippedSlottedItem* SlottedItem = EquippedGridSlot->OnItemEquipped(ItemToEquip,
+		EquippedSlottedItem->GetEquipmentTypeTag(),
+		UInv_InventoryStatics::GetInventoryWidget(GetOwningPlayer())->GetTileSize());
+
+	if (IsValid(SlottedItem)) SlottedItem->OnEquippedSlottedItemClicked.AddDynamic(this, &ThisClass::EquippedSlottedItemClicked);
+
+    EquippedGridSlot->SetEquippedSlottedItem(SlottedItem);
+}
+
+void UInv_SpatialInventory::BroadcastSlotClickedDelegates(UInv_InventoryItem* ItemToEquip, UInv_InventoryItem* ItemToUnequip) const
+{
+    UInv_InventoryComponent* InventoryComponent = UInv_InventoryStatics::GetInventoryComponent(GetOwningPlayer());
+    check(IsValid(InventoryComponent));
+    InventoryComponent->Server_EquipSlotClicked(ItemToEquip, ItemToUnequip);
+
+	if(GetOwningPlayer()->GetNetMode() != NM_DedicatedServer)
+	{
+        InventoryComponent->OnItemEquipped.Broadcast(ItemToEquip);
+        InventoryComponent->OnItemUnequipped.Broadcast(ItemToUnequip);
+    }
 }
 
 FInv_SlotAvailabilityResult UInv_SpatialInventory::HasRoomForItem(UInv_ItemComponent* ItemComponent) const
@@ -131,6 +274,18 @@ bool UInv_SpatialInventory::HasHoveredItem() const
 	return false;
 }
 
+UInv_HoverItem* UInv_SpatialInventory::GetHoverItem() const
+{
+	if (!ActiveGrid.IsValid()) return nullptr;
+	
+	return ActiveGrid->GetHoverItem();
+}
+
+float UInv_SpatialInventory::GetTileSize() const
+{
+    return Grid_Equippables->GetTileSize();
+}
+
 UInv_ItemDescription* UInv_SpatialInventory::GetItemDescription()
 {
 	if (!IsValid(ItemDescription))
@@ -183,7 +338,11 @@ void UInv_SpatialInventory::ShowItemCategory03()
 
 void UInv_SpatialInventory::SetActiveGrid(UInv_InventoryGrid* Grid, UButton* Button)
 {
-    if (ActiveGrid.IsValid()) ActiveGrid->HideCursor();
+	if (ActiveGrid.IsValid())
+	{
+		ActiveGrid->HideCursor();
+		ActiveGrid->OnHide();
+	}
 	ActiveGrid = Grid;
 	if (ActiveGrid.IsValid()) ActiveGrid->ShowCursor();
 	DisableButton(Button);
