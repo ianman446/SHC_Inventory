@@ -28,3 +28,11 @@ void UInv_Composite::ApplyFunction(FuncType Function)
         }
     }  
 }
+
+void UInv_Composite::Collapse()
+{
+    for (auto& Child : Children)
+    {
+        Child->Collapse();
+    }
+}

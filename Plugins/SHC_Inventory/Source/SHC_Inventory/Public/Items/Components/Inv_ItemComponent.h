@@ -13,12 +13,13 @@ class SHC_INVENTORY_API UInv_ItemComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UInv_ItemComponent();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void InitItemManifest(const FInv_ItemManifest CopyOfManifest);
+	void InitItemManifest(FInv_ItemManifest CopyOfManifest);
 	FInv_ItemManifest GetItemManifest() const { return ItemManifest; }
+	FInv_ItemManifest& GetItemManifestMutable() { return ItemManifest; }
 	FString GetPickupMessage() const { return PickupMessage; }
 	void PickedUp();
 protected:
@@ -26,14 +27,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
 	void OnPickedUp();
 
-private:	
+private:
 
 	UPROPERTY(Replicated, EditAnywhere, Category = "Inventory")
 	FInv_ItemManifest ItemManifest;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	FString PickupMessage;
-
-		
 	
 };

@@ -32,6 +32,8 @@ void UInv_EquippedGridSlot::NativeOnMouseLeave(const FPointerEvent& MouseEvent)
     UInv_HoverItem* HoverItem = UInv_InventoryStatics::GetHoverItemWidget(GetOwningPlayer());
     if (!IsValid(HoverItem)) return;
 
+    if (IsValid(EquippedSlottedItem)) return;
+
     if (HoverItem->GetItemTag().MatchesTag(EquimentTypeTag))
     {
         SetUnoccupiedTexture();

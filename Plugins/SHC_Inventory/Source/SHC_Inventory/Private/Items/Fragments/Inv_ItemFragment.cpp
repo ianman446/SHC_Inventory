@@ -5,6 +5,8 @@
 #include "Widgets/Composite/Inv_Leaf_LabeledValue.h"
 #include "Widgets/Composite/Inv_Leaf_Image.h"
 #include "Widgets/Composite/Inv_Leaf_Text.h"
+#include "EquipmentManagement/EquipActor/Inv_EquipActor.h"
+#include "Windows/WindowsApplication.h"
 
 void FInv_StackableFragment::SetMaxStackSize(int32 MaxSize)
 {
@@ -143,7 +145,7 @@ void FInv_StrengthModifier::OnUnequip(APlayerController* PC)
     GEngine->AddOnScreenDebugMessage(
         -1,
         5.f,
-        FColor::Green,
+        FColor::Red,
         FString::Printf(TEXT("Item Unequipped, Strength reduced by: %f"), GetFloatValue())
     );
 }
@@ -174,9 +176,43 @@ void FInv_EquipmentFragment::OnUnequip(APlayerController* PC)
 
 void FInv_EquipmentFragment::Assimilate(UInv_CompositeBase* Composite) const
 {
+    FInv_InventoryItemFragment::Assimilate(Composite);
     for (const auto& Modifier : EquipModifiers)
     {
         const auto& ModRef = Modifier.Get();
         ModRef.Assimilate(Composite);
     }
+}
+
+void FInv_EquipmentFragment::Manifest()
+{
+    FInv_InventoryItemFragment::Manifest();
+    for (auto& Modifier : EquipModifiers)
+    {
+        auto& ModRef = Modifier.GetMutable();
+        ModRef.Manifest();
+    }
+}
+
+AInv_EquipActor* FInv_EquipmentFragment::SpawnAttachedActor(USkeletalMeshComponent* AttachMesh) const
+{
+    if (!IsValid(AttachMesh) || !IsValid(EquipActorClass)) return nullptr;
+
+    AInv_EquipActor* SpawnedActor = AttachMesh->GetWorld()->SpawnActor<AInv_EquipActor>(EquipActorClass);
+    SpawnedActor->AttachToComponent(AttachMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketAttachPoint);
+
+    return SpawnedActor;
+}
+
+void FInv_EquipmentFragment::DestroyAttachedActor() const
+{
+    if (!EquippedActor.IsValid())
+    {
+        EquippedActor->Destroy();
+    }
+}
+
+void FInv_EquipmentFragment::SetEquippedActor(AInv_EquipActor* EquipActor)
+{
+    EquippedActor = EquipActor;
 }

@@ -17,10 +17,10 @@ class SHC_INVENTORY_API UInv_Composite : public UInv_CompositeBase
 public:
     virtual void NativeOnInitialized() override;
 	virtual void ApplyFunction(FuncType Function) override;
+    virtual void Collapse() override;
+    TArray<UInv_CompositeBase*> GetChildren() const { return Children; }
 
 private:
 	UPROPERTY()
-    TArray<TObjectPtr<UInv_CompositeBase>> Children;
-
-	
+    TArray<TObjectPtr<UInv_CompositeBase>> Children;	
 };
